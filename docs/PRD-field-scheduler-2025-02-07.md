@@ -24,7 +24,7 @@ Currently, municipalities and sports leagues manage field bookings through manua
 - High friction for users who must work within hotline hours and wait times
 - Administrative burden on staff to manually track and coordinate bookings
 
-### 1.2 Trigger
+### 1.2 Strategy
 
 The opportunity exists to create a focused, streamlined booking platform that prioritizes ease of use and data accuracy. While platforms like TeamSideline exist, they bundle booking with full league management features, creating complexity that may not be needed by organizations primarily seeking better scheduling tools.
 
@@ -38,13 +38,13 @@ The opportunity exists to create a focused, streamlined booking platform that pr
 | Families | Ability to rent fields for events with clear availability and pricing |
 | Park Directors / Admins | Tools to manage inventory, handle exceptions, maintain control over field usage |
 
-### 1.4 Constraints
+### 1.4 Current Scope
 
-| Constraint Type | Description |
+| Scope Type | Description |
 |-----------------|-------------|
 | Platform | Web-only for MVP and near-term releases |
 | Timeline | No fixed deadline; passion project with flexible pacing |
-| Scope | Focused on booking/scheduling only; not a full league management platform |
+| Business Reason | Focused on booking/scheduling only; not a full league management platform |
 
 ---
 
