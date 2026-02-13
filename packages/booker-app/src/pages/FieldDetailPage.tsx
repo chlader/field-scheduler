@@ -42,16 +42,6 @@ export default function FieldDetailPage() {
             {field.location}
           </Typography>
         )}
-        {field.amenities.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Amenities</Typography>
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-              {field.amenities.map((a) => (
-                <Chip key={a} label={a} size="small" variant="outlined" />
-              ))}
-            </Box>
-          </Box>
-        )}
         {slots.length > 0 && (
           <Box sx={{ mt: 3 }}>
             <Typography variant="subtitle2" gutterBottom>Weekly Availability</Typography>

@@ -1,10 +1,12 @@
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, Tooltip } from '@mui/material';
 import dayjs from 'dayjs';
-import type { WeekAvailabilityResponse } from '@field-scheduler/shared';
+import type { WeekAvailabilityResponse, WeekBooking } from '@field-scheduler/shared';
 import AvailabilityBlock from './AvailabilityBlock';
+import type { BookingSlotContext } from './BookingForm';
 
 interface Props {
   data: WeekAvailabilityResponse;
+  onSlotClick?: (context: BookingSlotContext) => void;
 }
 
 const HOUR_START = 6;  // 6 AM
@@ -23,7 +25,7 @@ function timeToMinutes(time: string): number {
   return h * 60 + m;
 }
 
-export default function WeekCalendar({ data }: Props) {
+export default function WeekCalendar({ data, onSlotClick }: Props) {
   const weekStart = dayjs(data.weekStart);
   const days = Array.from({ length: 7 }, (_, i) => weekStart.add(i, 'day'));
 
@@ -139,10 +141,63 @@ export default function WeekCalendar({ data }: Props) {
                         heightPercent={heightPercent}
                         leftPercent={leftPercent}
                         widthPercent={widthPercent}
+                        onClick={onSlotClick ? () => onSlotClick({
+                          fieldId: field.fieldId,
+                          fieldName: field.fieldName,
+                          date: slot.date,
+                          startTime: slot.startTime,
+                          endTime: slot.endTime,
+                        }) : undefined}
                       />
                     );
                   });
                 })}
+
+                {/* Booking overlays */}
+                {(data.bookings || [])
+                  .filter((b: WeekBooking) => b.date === dateStr)
+                  .map((booking: WeekBooking) => {
+                    const fieldIdx = activeFields.findIndex((f) => f.fieldId === booking.fieldId);
+                    if (fieldIdx === -1) return null;
+                    const startMin = timeToMinutes(booking.startTime) - HOUR_START * 60;
+                    const endMin = timeToMinutes(booking.endTime) - HOUR_START * 60;
+                    const topPercent = (startMin / (TOTAL_HOURS * 60)) * 100;
+                    const heightPercent = ((endMin - startMin) / (TOTAL_HOURS * 60)) * 100;
+                    const widthPercent = 100 / fieldCount;
+                    const leftPercent = fieldIdx * widthPercent;
+
+                    return (
+                      <Tooltip
+                        key={`booking-${booking.id}`}
+                        title={`Booked by ${booking.bookerName}${booking.purpose ? ` — ${booking.purpose}` : ''}`}
+                      >
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: `${topPercent}%`,
+                            height: `${heightPercent}%`,
+                            left: `${leftPercent}%`,
+                            width: `${widthPercent}%`,
+                            bgcolor: 'rgba(0,0,0,0.55)',
+                            borderRadius: 1,
+                            px: 0.5,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            zIndex: 1,
+                          }}
+                        >
+                          <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.2 }}>
+                            Booked
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.6rem' }}>
+                            {booking.bookerName}
+                          </Typography>
+                        </Box>
+                      </Tooltip>
+                    );
+                  })}
               </Box>
             </Box>
           );

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import fieldsRouter from './routes/fields';
 import availabilityRouter from './routes/availability';
+import bookingsRouter from './routes/bookings';
 import { runMigrations } from './migrate';
 
 dotenv.config();
@@ -16,6 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/fields', fieldsRouter);
 app.use('/api', availabilityRouter);
+app.use('/api', bookingsRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

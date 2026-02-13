@@ -23,6 +23,18 @@ export interface ResolvedSlot {
   endTime: string;    // HH:mm
 }
 
+export interface WeekBooking {
+  id: number;
+  fieldId: number;
+  date: string;       // YYYY-MM-DD
+  startTime: string;  // HH:mm
+  endTime: string;    // HH:mm
+  bookerName: string;
+  bookerEmail?: string;
+  purpose?: string;
+  status: string;
+}
+
 export interface FieldWeekAvailability {
   fieldId: number;
   fieldName: string;
@@ -33,4 +45,5 @@ export interface WeekAvailabilityResponse {
   weekStart: string;  // YYYY-MM-DD (Sunday)
   weekEnd: string;    // YYYY-MM-DD (Saturday)
   fields: FieldWeekAvailability[];
+  bookings: WeekBooking[];
 }

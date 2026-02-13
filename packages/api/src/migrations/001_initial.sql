@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS fields (
   field_type    VARCHAR(100) NOT NULL,
   surface       VARCHAR(100),
   location      VARCHAR(500),
-  amenities     TEXT[] DEFAULT '{}',
   is_active     BOOLEAN DEFAULT true,
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   updated_at    TIMESTAMPTZ DEFAULT NOW()

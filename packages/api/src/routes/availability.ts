@@ -142,10 +142,35 @@ router.get('/availability/week', async (req: Request, res: Response) => {
       }
     }
 
+    // Get bookings for this week
+    const bookingsResult = await pool.query(
+      `SELECT id, field_id, date,
+              to_char(start_time, 'HH24:MI') as start_time,
+              to_char(end_time, 'HH24:MI') as end_time,
+              booker_name, booker_email, purpose, status
+       FROM bookings
+       WHERE date >= $1::DATE AND date <= $2::DATE
+       ORDER BY date, start_time`,
+      [formatDate(weekStart), formatDate(weekEnd)]
+    );
+
+    const bookings = bookingsResult.rows.map((row: { id: number; field_id: number; date: string; start_time: string; end_time: string; booker_name: string; booker_email: string | null; purpose: string | null; status: string }) => ({
+      id: row.id,
+      fieldId: row.field_id,
+      date: typeof row.date === 'string' ? row.date : new Date(row.date).toISOString().split('T')[0],
+      startTime: row.start_time,
+      endTime: row.end_time,
+      bookerName: row.booker_name,
+      ...(row.booker_email ? { bookerEmail: row.booker_email } : {}),
+      ...(row.purpose ? { purpose: row.purpose } : {}),
+      status: row.status,
+    }));
+
     res.json({
       weekStart: formatDate(weekStart),
       weekEnd: formatDate(weekEnd),
       fields: Array.from(fieldsMap.values()),
+      bookings,
     });
   } catch (err) {
     console.error('Error fetching week availability:', err);

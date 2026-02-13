@@ -21,7 +21,7 @@ field-scheduler/
 │   │   ├── tsconfig.json
 │   │   └── src/
 │   │       ├── types/
-│   │       │   ├── field.ts      # Field, FieldType, Amenity types
+│   │       │   ├── field.ts      # Field, FieldType
 │   │       │   ├── availability.ts # AvailabilitySlot, DayOfWeek types
 │   │       │   └── index.ts
 │   │       ├── api-client.ts     # Typed fetch wrapper for API calls

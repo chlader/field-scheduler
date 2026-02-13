@@ -31,23 +31,41 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/fields - Create a new field
+// POST /api/fields - Create a new field with default all-day availability
 router.post('/', async (req: Request, res: Response) => {
+  const client = await pool.connect();
   try {
-    const { name, field_type, surface, location, amenities } = req.body;
+    const { name, field_type, surface, location } = req.body;
     if (!name || !field_type) {
       return res.status(400).json({ error: 'name and field_type are required' });
     }
-    const result = await pool.query(
-      `INSERT INTO fields (name, field_type, surface, location, amenities)
-       VALUES ($1, $2, $3, $4, $5)
+
+    await client.query('BEGIN');
+
+    const result = await client.query(
+      `INSERT INTO fields (name, field_type, surface, location)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [name, field_type, surface || null, location || null, amenities || []]
+      [name, field_type, surface || null, location || null || []]
     );
-    res.status(201).json(result.rows[0]);
+    const field = result.rows[0];
+
+    // Insert default all-day availability for every day of the week (0=Sun..6=Sat)
+    await client.query(
+      `INSERT INTO availability_slots (field_id, day_of_week, start_time, end_time)
+       SELECT $1, d, '00:00'::TIME, '23:59'::TIME
+       FROM generate_series(0, 6) AS d`,
+      [field.id]
+    );
+
+    await client.query('COMMIT');
+    res.status(201).json(field);
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Error creating field:', err);
     res.status(500).json({ error: 'Failed to create field' });
+  } finally {
+    client.release();
   }
 });
 
@@ -55,7 +73,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, field_type, surface, location, amenities } = req.body;
+    const { name, field_type, surface, location } = req.body;
 
     const existing = await pool.query('SELECT * FROM fields WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
@@ -65,15 +83,14 @@ router.put('/:id', async (req: Request, res: Response) => {
     const field = existing.rows[0];
     const result = await pool.query(
       `UPDATE fields
-       SET name = $1, field_type = $2, surface = $3, location = $4, amenities = $5, updated_at = NOW()
-       WHERE id = $6
+       SET name = $1, field_type = $2, surface = $3, location = $4, updated_at = NOW()
+       WHERE id = $5
        RETURNING *`,
       [
         name ?? field.name,
         field_type ?? field.field_type,
         surface !== undefined ? surface : field.surface,
         location !== undefined ? location : field.location,
-        amenities ?? field.amenities,
         id,
       ]
     );

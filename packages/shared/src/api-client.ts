@@ -5,6 +5,8 @@ import type {
   AvailabilitySlot,
   CreateAvailabilitySlotInput,
   WeekAvailabilityResponse,
+  Booking,
+  CreateBookingInput,
 } from './types';
 
 export class ApiClient {
@@ -68,5 +70,32 @@ export class ApiClient {
 
   getWeekAvailability(date: string): Promise<WeekAvailabilityResponse> {
     return this.request(`/api/availability/week?date=${date}`);
+  }
+
+  // Bookings
+  createBooking(input: CreateBookingInput): Promise<Booking> {
+    return this.request('/api/bookings', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  getBookings(params: { date?: string; field_id?: number } = {}): Promise<Booking[]> {
+    const query = new URLSearchParams();
+    if (params.date) query.set('date', params.date);
+    if (params.field_id) query.set('field_id', String(params.field_id));
+    const qs = query.toString();
+    return this.request(`/api/bookings${qs ? `?${qs}` : ''}`);
+  }
+
+  getFieldBookings(fieldId: number, params: { date?: string } = {}): Promise<Booking[]> {
+    const query = new URLSearchParams();
+    if (params.date) query.set('date', params.date);
+    const qs = query.toString();
+    return this.request(`/api/fields/${fieldId}/bookings${qs ? `?${qs}` : ''}`);
+  }
+
+  cancelBooking(id: number): Promise<void> {
+    return this.request(`/api/bookings/${id}`, { method: 'DELETE' });
   }
 }

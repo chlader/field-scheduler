@@ -21,13 +21,6 @@ export default function FieldCard({ field }: Props) {
               {field.location}
             </Typography>
           )}
-          {field.amenities.length > 0 && (
-            <Box sx={{ mt: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-              {field.amenities.map((a) => (
-                <Chip key={a} label={a} size="small" variant="outlined" />
-              ))}
-            </Box>
-          )}
         </CardContent>
       </CardActionArea>
     </Card>

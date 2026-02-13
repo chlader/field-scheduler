@@ -27,7 +27,6 @@ export default function FieldTable({ fields, onDelete }: Props) {
             <TableCell>Type</TableCell>
             <TableCell>Surface</TableCell>
             <TableCell>Location</TableCell>
-            <TableCell>Amenities</TableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -38,11 +37,6 @@ export default function FieldTable({ fields, onDelete }: Props) {
               <TableCell>{field.field_type}</TableCell>
               <TableCell>{field.surface || '—'}</TableCell>
               <TableCell>{field.location || '—'}</TableCell>
-              <TableCell>
-                {field.amenities.map((a) => (
-                  <Chip key={a} label={a} size="small" sx={{ mr: 0.5, mb: 0.5 }} />
-                ))}
-              </TableCell>
               <TableCell align="right">
                 <Tooltip title="Availability">
                   <IconButton component={Link} to={`/fields/${field.id}/availability`} color="primary">

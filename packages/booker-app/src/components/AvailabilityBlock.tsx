@@ -9,6 +9,7 @@ interface Props {
   heightPercent: number;
   leftPercent: number;
   widthPercent: number;
+  onClick?: () => void;
 }
 
 export default function AvailabilityBlock({
@@ -20,10 +21,12 @@ export default function AvailabilityBlock({
   heightPercent,
   leftPercent,
   widthPercent,
+  onClick,
 }: Props) {
   return (
     <Tooltip title={`${fieldName}: ${startTime} - ${endTime}`}>
       <Box
+        onClick={onClick}
         sx={{
           position: 'absolute',
           top: `${topPercent}%`,
