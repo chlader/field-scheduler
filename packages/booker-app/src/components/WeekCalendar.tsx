@@ -13,10 +13,7 @@ const HOUR_START = 6;  // 6 AM
 const HOUR_END = 22;   // 10 PM
 const TOTAL_HOURS = HOUR_END - HOUR_START;
 
-const FIELD_COLORS = [
-  '#2e7d32', '#1565c0', '#c62828', '#6a1b9a',
-  '#e65100', '#00838f', '#4e342e', '#37474f',
-];
+const SLOT_COLOR = '#2e7d32';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -29,9 +26,7 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
   const weekStart = dayjs(data.weekStart);
   const days = Array.from({ length: 7 }, (_, i) => weekStart.add(i, 'day'));
 
-  // Fields that actually have slots
   const activeFields = data.fields.filter((f) => f.slots.length > 0);
-  const fieldCount = activeFields.length || 1;
 
   const hourLabels = Array.from({ length: TOTAL_HOURS + 1 }, (_, i) => {
     const hour = HOUR_START + i;
@@ -120,15 +115,13 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
                 ))}
 
                 {/* Availability blocks */}
-                {activeFields.map((field, fieldIdx) => {
+                {activeFields.map((field) => {
                   const daySlots = field.slots.filter((s) => s.date === dateStr);
                   return daySlots.map((slot, slotIdx) => {
                     const startMin = timeToMinutes(slot.startTime) - HOUR_START * 60;
                     const endMin = timeToMinutes(slot.endTime) - HOUR_START * 60;
                     const topPercent = (startMin / (TOTAL_HOURS * 60)) * 100;
                     const heightPercent = ((endMin - startMin) / (TOTAL_HOURS * 60)) * 100;
-                    const widthPercent = 100 / fieldCount;
-                    const leftPercent = fieldIdx * widthPercent;
 
                     return (
                       <AvailabilityBlock
@@ -136,11 +129,11 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
                         fieldName={field.fieldName}
                         startTime={slot.startTime}
                         endTime={slot.endTime}
-                        color={FIELD_COLORS[fieldIdx % FIELD_COLORS.length]}
+                        color={SLOT_COLOR}
                         topPercent={topPercent}
                         heightPercent={heightPercent}
-                        leftPercent={leftPercent}
-                        widthPercent={widthPercent}
+                        leftPercent={0}
+                        widthPercent={100}
                         onClick={onSlotClick ? () => onSlotClick({
                           fieldId: field.fieldId,
                           fieldName: field.fieldName,
@@ -157,14 +150,10 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
                 {(data.bookings || [])
                   .filter((b: WeekBooking) => b.date === dateStr)
                   .map((booking: WeekBooking) => {
-                    const fieldIdx = activeFields.findIndex((f) => f.fieldId === booking.fieldId);
-                    if (fieldIdx === -1) return null;
                     const startMin = timeToMinutes(booking.startTime) - HOUR_START * 60;
                     const endMin = timeToMinutes(booking.endTime) - HOUR_START * 60;
                     const topPercent = (startMin / (TOTAL_HOURS * 60)) * 100;
                     const heightPercent = ((endMin - startMin) / (TOTAL_HOURS * 60)) * 100;
-                    const widthPercent = 100 / fieldCount;
-                    const leftPercent = fieldIdx * widthPercent;
 
                     return (
                       <Tooltip
@@ -176,8 +165,8 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
                             position: 'absolute',
                             top: `${topPercent}%`,
                             height: `${heightPercent}%`,
-                            left: `${leftPercent}%`,
-                            width: `${widthPercent}%`,
+                            left: 0,
+                            width: '100%',
                             bgcolor: 'rgba(0,0,0,0.55)',
                             borderRadius: 1,
                             px: 0.5,
@@ -204,17 +193,6 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
         })}
       </Box>
 
-      {/* Legend */}
-      {activeFields.length > 0 && (
-        <Box sx={{ display: 'flex', gap: 2, p: 2, borderTop: '1px solid #ddd', flexWrap: 'wrap' }}>
-          {activeFields.map((field, i) => (
-            <Box key={field.fieldId} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Box sx={{ width: 12, height: 12, bgcolor: FIELD_COLORS[i % FIELD_COLORS.length], borderRadius: '2px' }} />
-              <Typography variant="caption">{field.fieldName}</Typography>
-            </Box>
-          ))}
-        </Box>
-      )}
     </Paper>
   );
 }

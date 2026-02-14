@@ -17,7 +17,7 @@ app.use(express.json());
 // Routes
 app.use('/api/fields', fieldsRouter);
 app.use('/api', availabilityRouter);
-app.use('/api', bookingsRouter);
+app.use('/api/bookings', bookingsRouter);
 
 // Health check
 app.get('/api/health', (_req, res) => {

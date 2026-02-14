@@ -101,6 +101,34 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/fields/:id/bookings?date=YYYY-MM-DD - Bookings for a specific field
+router.get('/:id/bookings', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { date } = req.query;
+
+    let query = `SELECT id, field_id, date,
+                        to_char(start_time, 'HH24:MI') as start_time,
+                        to_char(end_time, 'HH24:MI') as end_time,
+                        booker_name, booker_email, purpose, status, created_at
+                 FROM bookings WHERE field_id = $1`;
+    const params: (string | number)[] = [Number(id)];
+
+    if (date) {
+      params.push(date as string);
+      query += ` AND date = $${params.length}`;
+    }
+
+    query += ' ORDER BY date, start_time';
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching field bookings:', err);
+    res.status(500).json({ error: 'Failed to fetch field bookings' });
+  }
+});
+
 // DELETE /api/fields/:id - Soft-delete
 router.delete('/:id', async (req: Request, res: Response) => {
   try {

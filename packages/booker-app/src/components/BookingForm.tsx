@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -7,6 +7,8 @@ import {
   TextField,
   Button,
   Alert,
+  Box,
+  Typography,
 } from '@mui/material';
 import type { CreateBookingInput } from '@field-scheduler/shared';
 import { ApiClient } from '@field-scheduler/shared';
@@ -30,17 +32,39 @@ interface Props {
 export type { BookingSlotContext };
 
 export default function BookingForm({ slot, onClose, onBooked }: Props) {
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [bookerName, setBookerName] = useState('');
   const [bookerEmail, setBookerEmail] = useState('');
   const [purpose, setPurpose] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (slot) {
+      setStartTime(slot.startTime);
+      setEndTime(slot.endTime);
+      setError('');
+    }
+  }, [slot]);
+
   if (!slot) return null;
 
   const handleSubmit = async () => {
     if (!bookerName.trim()) {
       setError('Name is required');
+      return;
+    }
+    if (!startTime || !endTime) {
+      setError('Start and end times are required');
+      return;
+    }
+    if (startTime >= endTime) {
+      setError('Start time must be before end time');
+      return;
+    }
+    if (startTime < slot.startTime || endTime > slot.endTime) {
+      setError(`Times must be within the available window (${slot.startTime} – ${slot.endTime})`);
       return;
     }
 
@@ -50,8 +74,8 @@ export default function BookingForm({ slot, onClose, onBooked }: Props) {
     const input: CreateBookingInput = {
       field_id: slot.fieldId,
       date: slot.date,
-      start_time: slot.startTime,
-      end_time: slot.endTime,
+      start_time: startTime,
+      end_time: endTime,
       booker_name: bookerName.trim(),
       ...(bookerEmail.trim() ? { booker_email: bookerEmail.trim() } : {}),
       ...(purpose.trim() ? { purpose: purpose.trim() } : {}),
@@ -75,13 +99,34 @@ export default function BookingForm({ slot, onClose, onBooked }: Props) {
       <DialogTitle>Book {slot.fieldName}</DialogTitle>
       <DialogContent>
         <Alert severity="info" sx={{ mb: 2 }}>
-          {slot.date} &middot; {slot.startTime} &ndash; {slot.endTime}
+          {slot.date} &middot; Available {slot.startTime} &ndash; {slot.endTime}
         </Alert>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
+        <Typography variant="subtitle2" sx={{ mb: 1, mt: 1 }}>Booking Time</Typography>
+        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+          <TextField
+            type="time"
+            label="Start"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ min: slot.startTime, max: slot.endTime, step: 300 }}
+            fullWidth
+          />
+          <TextField
+            type="time"
+            label="End"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            inputProps={{ min: slot.startTime, max: slot.endTime, step: 300 }}
+            fullWidth
+          />
+        </Box>
         <TextField
           autoFocus
           label="Your Name"
@@ -89,7 +134,7 @@ export default function BookingForm({ slot, onClose, onBooked }: Props) {
           required
           value={bookerName}
           onChange={(e) => setBookerName(e.target.value)}
-          sx={{ mb: 2, mt: 1 }}
+          sx={{ mb: 2 }}
         />
         <TextField
           label="Email"

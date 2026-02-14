@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material';
 import dayjs from 'dayjs';
-import type { WeekAvailabilityResponse } from '@field-scheduler/shared';
+import type { Field, WeekAvailabilityResponse } from '@field-scheduler/shared';
 import { ApiClient } from '@field-scheduler/shared';
 import WeekNavigator from '../components/WeekNavigator';
 import WeekCalendar from '../components/WeekCalendar';
@@ -15,6 +16,17 @@ export default function CalendarPage() {
   const [weekData, setWeekData] = useState<WeekAvailabilityResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [bookingSlot, setBookingSlot] = useState<BookingSlotContext | null>(null);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [selectedFieldId, setSelectedFieldId] = useState<number | ''>('');
+
+  useEffect(() => {
+    api.getFields().then((fetched) => {
+      setFields(fetched);
+      if (fetched.length > 0 && selectedFieldId === '') {
+        setSelectedFieldId(fetched[0].id);
+      }
+    }).catch(console.error);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchWeek = useCallback((date: dayjs.Dayjs) => {
     setLoading(true);
@@ -32,28 +44,56 @@ export default function CalendarPage() {
   const handleNextWeek = () => setCurrentDate((d) => d.add(7, 'day'));
   const handleToday = () => setCurrentDate(dayjs());
 
+  const handleFieldChange = (e: SelectChangeEvent<number>) => {
+    setSelectedFieldId(Number(e.target.value));
+  };
+
   const handleBooked = () => {
     setBookingSlot(null);
     fetchWeek(currentDate);
   };
+
+  const filteredWeekData: WeekAvailabilityResponse | null = weekData && selectedFieldId !== ''
+    ? {
+        ...weekData,
+        fields: weekData.fields.filter((f) => f.fieldId === selectedFieldId),
+        bookings: (weekData.bookings || []).filter((b) => b.fieldId === selectedFieldId),
+      }
+    : weekData;
 
   return (
     <>
       <Typography variant="h4" gutterBottom>
         Field Availability Calendar
       </Typography>
-      <WeekNavigator
-        weekStart={weekData?.weekStart || ''}
-        weekEnd={weekData?.weekEnd || ''}
-        onPrev={handlePrevWeek}
-        onNext={handleNextWeek}
-        onToday={handleToday}
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+        <WeekNavigator
+          weekStart={weekData?.weekStart || ''}
+          weekEnd={weekData?.weekEnd || ''}
+          onPrev={handlePrevWeek}
+          onNext={handleNextWeek}
+          onToday={handleToday}
+        />
+        {fields.length > 0 && (
+          <FormControl size="small" sx={{ minWidth: 250 }}>
+            <InputLabel>Field</InputLabel>
+            <Select
+              value={selectedFieldId === '' ? '' as unknown as number : selectedFieldId}
+              label="Field"
+              onChange={handleFieldChange}
+            >
+              {fields.map((f) => (
+                <MenuItem key={f.id} value={f.id}>{f.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+      </Box>
       <Box sx={{ mt: 2 }}>
         {loading ? (
           <Typography>Loading...</Typography>
-        ) : weekData ? (
-          <WeekCalendar data={weekData} onSlotClick={setBookingSlot} />
+        ) : filteredWeekData ? (
+          <WeekCalendar data={filteredWeekData} onSlotClick={setBookingSlot} />
         ) : (
           <Typography>No data available.</Typography>
         )}
