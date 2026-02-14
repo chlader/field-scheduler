@@ -28,7 +28,7 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
 
   const activeFields = data.fields.filter((f) => f.slots.length > 0);
 
-  const hourLabels = Array.from({ length: TOTAL_HOURS + 1 }, (_, i) => {
+  const hourLabels = Array.from({ length: TOTAL_HOURS }, (_, i) => {
     const hour = HOUR_START + i;
     const suffix = hour < 12 ? 'AM' : 'PM';
     const display = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -36,7 +36,7 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
   });
 
   return (
-    <Paper sx={{ overflow: 'auto' }}>
+    <Paper sx={{ overflow: 'auto', border: '1px solid #ddd' }} elevation={0}>
       <Box sx={{ display: 'flex', minWidth: 800 }}>
         {/* Time labels column */}
         <Box sx={{ width: 60, flexShrink: 0 }}>
@@ -50,7 +50,7 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
                 alignItems: 'flex-start',
                 justifyContent: 'flex-end',
                 pr: 1,
-                mt: '-8px',
+                mt: i === 0 ? 0 : '-16px',
               }}
             >
               <Typography variant="caption" color="text.secondary">
@@ -63,7 +63,6 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
         {/* Day columns */}
         {days.map((day, dayIndex) => {
           const dateStr = day.format('YYYY-MM-DD');
-          const isToday = day.isSame(dayjs(), 'day');
 
           return (
             <Box
@@ -83,23 +82,21 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderBottom: '1px solid #ddd',
-                  bgcolor: isToday ? 'primary.light' : 'transparent',
                 }}
               >
-                <Typography variant="caption" fontWeight={isToday ? 700 : 400}>
+                <Typography variant="caption">
                   {DAY_LABELS[dayIndex]}
                 </Typography>
                 <Typography
                   variant="caption"
-                  fontWeight={isToday ? 700 : 400}
-                  color={isToday ? 'primary.contrastText' : 'text.secondary'}
+                  color="text.secondary"
                 >
                   {day.format('M/D')}
                 </Typography>
               </Box>
 
               {/* Time grid */}
-              <Box sx={{ position: 'relative', height: TOTAL_HOURS * 60 }}>
+              <Box sx={{ position: 'relative', height: TOTAL_HOURS * 60, overflow: 'hidden' }}>
                 {/* Hour lines */}
                 {hourLabels.map((_, i) => (
                   <Box
@@ -192,7 +189,6 @@ export default function WeekCalendar({ data, onSlotClick }: Props) {
           );
         })}
       </Box>
-
     </Paper>
   );
 }

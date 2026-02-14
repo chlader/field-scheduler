@@ -42,8 +42,6 @@ export default function CalendarPage() {
 
   const handlePrevWeek = () => setCurrentDate((d) => d.subtract(7, 'day'));
   const handleNextWeek = () => setCurrentDate((d) => d.add(7, 'day'));
-  const handleToday = () => setCurrentDate(dayjs());
-
   const handleFieldChange = (e: SelectChangeEvent<number>) => {
     setSelectedFieldId(Number(e.target.value));
   };
@@ -72,7 +70,6 @@ export default function CalendarPage() {
           weekEnd={weekData?.weekEnd || ''}
           onPrev={handlePrevWeek}
           onNext={handleNextWeek}
-          onToday={handleToday}
         />
         {fields.length > 0 && (
           <FormControl size="small" sx={{ minWidth: 250 }}>
