@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import FieldListPage from './pages/FieldListPage';
 import FieldFormPage from './pages/FieldFormPage';
 import AvailabilityPage from './pages/AvailabilityPage';
+import FieldBookingsPage from './pages/FieldBookingsPage';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="/fields/new" element={<FieldFormPage />} />
             <Route path="/fields/:id/edit" element={<FieldFormPage />} />
             <Route path="/fields/:id/availability" element={<AvailabilityPage />} />
+            <Route path="/fields/:id/bookings" element={<FieldBookingsPage />} />
           </Routes>
         </Box>
       </Container>

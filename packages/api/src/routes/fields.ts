@@ -107,7 +107,7 @@ router.get('/:id/bookings', async (req: Request, res: Response) => {
     const { id } = req.params;
     const { date } = req.query;
 
-    let query = `SELECT id, field_id, date,
+    let query = `SELECT id, field_id, to_char(date, 'YYYY-MM-DD') as date,
                         to_char(start_time, 'HH24:MI') as start_time,
                         to_char(end_time, 'HH24:MI') as end_time,
                         booker_name, booker_email, purpose, status, created_at

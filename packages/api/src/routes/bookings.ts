@@ -44,7 +44,7 @@ router.post('/', async (req: Request, res: Response) => {
     const result = await client.query(
       `INSERT INTO bookings (field_id, date, start_time, end_time, booker_name, booker_email, purpose)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, field_id, date,
+       RETURNING id, field_id, to_char(date, 'YYYY-MM-DD') as date,
                  to_char(start_time, 'HH24:MI') as start_time,
                  to_char(end_time, 'HH24:MI') as end_time,
                  booker_name, booker_email, purpose, status, created_at`,
@@ -67,7 +67,7 @@ router.get('/', async (req: Request, res: Response) => {
   try {
     const { date, field_id } = req.query;
 
-    let query = `SELECT id, field_id, date,
+    let query = `SELECT id, field_id, to_char(date, 'YYYY-MM-DD') as date,
                         to_char(start_time, 'HH24:MI') as start_time,
                         to_char(end_time, 'HH24:MI') as end_time,
                         booker_name, booker_email, purpose, status, created_at

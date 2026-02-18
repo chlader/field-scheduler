@@ -17,14 +17,22 @@ function formatTime(t: string): string {
   return `${display}:${mStr} ${suffix}`;
 }
 
+function getTomorrow(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function FieldDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [field, setField] = useState<Field | null>(null);
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(getTomorrow);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startTime, setStartTime] = useState('08:00');
+  const [endTime, setEndTime] = useState('20:00');
   const [bookerName, setBookerName] = useState('');
   const [bookerEmail, setBookerEmail] = useState('');
   const [purpose, setPurpose] = useState('');
@@ -55,10 +63,31 @@ export default function FieldDetailPage() {
   }, [id, selectedDate, fetchBookings]);
 
   const handleSubmit = async () => {
-    if (!field || !selectedDate) return;
+    if (!field) return;
 
     setError('');
     setSuccess('');
+
+    if (!selectedDate) {
+      setError('Date is required');
+      return;
+    }
+    if (!startTime || !endTime) {
+      setError('Start and end times are required');
+      return;
+    }
+    if (startTime >= endTime) {
+      setError('Start time must be before end time');
+      return;
+    }
+    if (!bookerName.trim()) {
+      setError('Name is required');
+      return;
+    }
+    if (bookerEmail.trim() && !EMAIL_RE.test(bookerEmail.trim())) {
+      setError('Please enter a valid email address');
+      return;
+    }
     setSubmitting(true);
 
     const input: CreateBookingInput = {
@@ -74,8 +103,8 @@ export default function FieldDetailPage() {
     try {
       await api.createBooking(input);
       setSuccess('Booking confirmed!');
-      setStartTime('');
-      setEndTime('');
+      setStartTime('08:00');
+      setEndTime('20:00');
       setBookerName('');
       setBookerEmail('');
       setPurpose('');
@@ -107,17 +136,6 @@ export default function FieldDetailPage() {
           <Typography variant="body1" color="text.secondary" gutterBottom>
             {field.location}
           </Typography>
-        )}
-
-        {slots.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>Weekly Availability</Typography>
-            {slots.map((slot) => (
-              <Typography key={slot.id} variant="body2">
-                {DAY_NAMES[slot.day_of_week]}: {formatTime(slot.start_time)} &ndash; {formatTime(slot.end_time)}
-              </Typography>
-            ))}
-          </Box>
         )}
 
         <Divider sx={{ my: 3 }} />
@@ -186,7 +204,7 @@ export default function FieldDetailPage() {
           <Button
             variant="contained"
             onClick={handleSubmit}
-            disabled={submitting || !selectedDate}
+            disabled={submitting}
           >
             {submitting ? 'Booking...' : 'Book'}
           </Button>

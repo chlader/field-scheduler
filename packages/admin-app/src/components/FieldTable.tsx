@@ -6,6 +6,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import EventIcon from '@mui/icons-material/Event';
 import type { Field } from '@field-scheduler/shared';
 
 interface Props {
@@ -38,6 +39,11 @@ export default function FieldTable({ fields, onDelete }: Props) {
               <TableCell>{field.surface || '—'}</TableCell>
               <TableCell>{field.location || '—'}</TableCell>
               <TableCell align="right">
+                <Tooltip title="Bookings">
+                  <IconButton component={Link} to={`/fields/${field.id}/bookings`} color="primary">
+                    <EventIcon />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Availability">
                   <IconButton component={Link} to={`/fields/${field.id}/availability`} color="primary">
                     <ScheduleIcon />
