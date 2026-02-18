@@ -35,7 +35,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   const client = await pool.connect();
   try {
-    const { name, field_type, surface, location } = req.body;
+    const { name, field_type, surface, location, description, size, photo_url, has_lights, has_parking, is_indoor } = req.body;
     if (!name || !field_type) {
       return res.status(400).json({ error: 'name and field_type are required' });
     }
@@ -43,10 +43,10 @@ router.post('/', async (req: Request, res: Response) => {
     await client.query('BEGIN');
 
     const result = await client.query(
-      `INSERT INTO fields (name, field_type, surface, location)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO fields (name, field_type, surface, location, description, size, photo_url, has_lights, has_parking, is_indoor)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
-      [name, field_type, surface || null, location || null || []]
+      [name, field_type, surface || null, location || null, description || null, size || null, photo_url || null, has_lights ?? false, has_parking ?? false, is_indoor ?? false]
     );
     const field = result.rows[0];
 
@@ -73,7 +73,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, field_type, surface, location } = req.body;
+    const { name, field_type, surface, location, description, size, photo_url, has_lights, has_parking, is_indoor } = req.body;
 
     const existing = await pool.query('SELECT * FROM fields WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
@@ -83,14 +83,23 @@ router.put('/:id', async (req: Request, res: Response) => {
     const field = existing.rows[0];
     const result = await pool.query(
       `UPDATE fields
-       SET name = $1, field_type = $2, surface = $3, location = $4, updated_at = NOW()
-       WHERE id = $5
+       SET name = $1, field_type = $2, surface = $3, location = $4,
+           description = $5, size = $6, photo_url = $7,
+           has_lights = $8, has_parking = $9, is_indoor = $10,
+           updated_at = NOW()
+       WHERE id = $11
        RETURNING *`,
       [
         name ?? field.name,
         field_type ?? field.field_type,
         surface !== undefined ? surface : field.surface,
         location !== undefined ? location : field.location,
+        description !== undefined ? description : field.description,
+        size !== undefined ? size : field.size,
+        photo_url !== undefined ? photo_url : field.photo_url,
+        has_lights ?? field.has_lights,
+        has_parking ?? field.has_parking,
+        is_indoor ?? field.is_indoor,
         id,
       ]
     );

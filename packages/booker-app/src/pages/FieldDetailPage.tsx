@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
-  Typography, Paper, Chip, Box, Button, TextField, Divider, Alert,
+  Typography, Paper, Chip, Box, Button, TextField, Divider, Alert, Grid,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import type { Field, AvailabilitySlot, Booking, CreateBookingInput } from '@field-scheduler/shared';
@@ -127,99 +127,132 @@ export default function FieldDetailPage() {
         Back to Fields
       </Button>
       <Paper sx={{ p: 3 }}>
+        {field.photo_url && (
+          <Box
+            component="img"
+            src={field.photo_url}
+            alt=""
+            sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 1, mb: 2 }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
         <Typography variant="h4" gutterBottom>{field.name}</Typography>
         <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
           <Chip label={field.field_type} color="primary" />
           {field.surface && <Chip label={field.surface} variant="outlined" />}
+          {field.size && <Chip label={field.size} variant="outlined" />}
+          {field.has_lights && <Chip label="Lights" size="small" />}
+          {field.has_parking && <Chip label="Parking" size="small" />}
+          {field.is_indoor && <Chip label="Indoor" size="small" />}
         </Box>
         {field.location && (
           <Typography variant="body1" color="text.secondary" gutterBottom>
             {field.location}
           </Typography>
         )}
+        {field.description && (
+          <Typography variant="body1" gutterBottom>
+            {field.description}
+          </Typography>
+        )}
 
         <Divider sx={{ my: 3 }} />
 
-        <Typography variant="h6" gutterBottom>Book This Field</Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={7}>
+            <Typography variant="h6" gutterBottom>Book This Field</Typography>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400 }}>
-          <TextField
-            type="date"
-            label="Date"
-            value={selectedDate}
-            onChange={(e) => { setSelectedDate(e.target.value); setSuccess(''); setError(''); }}
-            InputLabelProps={{ shrink: true }}
-          />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                type="date"
+                label="Date"
+                value={selectedDate}
+                onChange={(e) => { setSelectedDate(e.target.value); setSuccess(''); setError(''); }}
+                InputLabelProps={{ shrink: true }}
+              />
 
-          {selectedDate && daySlots.length === 0 && (
-            <Alert severity="warning">
-              No availability on {DAY_NAMES[selectedDayOfWeek]}s.
-            </Alert>
-          )}
+              {selectedDate && daySlots.length === 0 && (
+                <Alert severity="warning">
+                  No availability on {DAY_NAMES[selectedDayOfWeek]}s.
+                </Alert>
+              )}
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField
-              type="time"
-              label="Start time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ step: 300 }}
-              fullWidth
-            />
-            <TextField
-              type="time"
-              label="End time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ step: 300 }}
-              fullWidth
-            />
-          </Box>
-          <TextField
-            label="Your Name"
-            required
-            value={bookerName}
-            onChange={(e) => setBookerName(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Email"
-            type="email"
-            value={bookerEmail}
-            onChange={(e) => setBookerEmail(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Purpose"
-            multiline
-            rows={2}
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            fullWidth
-          />
-          {error && <Alert severity="error">{error}</Alert>}
-          {success && <Alert severity="success">{success}</Alert>}
-          <Button
-            variant="contained"
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? 'Booking...' : 'Book'}
-          </Button>
-
-          {bookings.length > 0 && (
-            <Box sx={{ mt: 1 }}>
-              <Typography variant="subtitle2" gutterBottom>Existing bookings on this date</Typography>
-              {bookings.map((b) => (
-                <Typography key={b.id} variant="body2" color="text.secondary">
-                  {formatTime(b.start_time)} &ndash; {formatTime(b.end_time)} — {b.booker_name}
-                </Typography>
-              ))}
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <TextField
+                  type="time"
+                  label="Start time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
+                  fullWidth
+                />
+                <TextField
+                  type="time"
+                  label="End time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
+                  fullWidth
+                />
+              </Box>
+              <TextField
+                label="Your Name"
+                required
+                value={bookerName}
+                onChange={(e) => setBookerName(e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Email"
+                type="email"
+                value={bookerEmail}
+                onChange={(e) => setBookerEmail(e.target.value)}
+                fullWidth
+              />
+              <TextField
+                label="Purpose"
+                multiline
+                rows={2}
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+                fullWidth
+              />
+              {error && <Alert severity="error">{error}</Alert>}
+              {success && <Alert severity="success">{success}</Alert>}
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting ? 'Booking...' : 'Book'}
+              </Button>
             </Box>
-          )}
-        </Box>
+          </Grid>
+
+          <Grid item xs={12} md={5}>
+            <Typography variant="h6" gutterBottom>Existing Bookings</Typography>
+            {bookings.length > 0 ? (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {bookings.map((b) => (
+                  <Paper key={b.id} variant="outlined" sx={{ p: 1.5 }}>
+                    <Typography variant="body2">
+                      {formatTime(b.start_time)} &ndash; {formatTime(b.end_time)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {b.booker_name}
+                    </Typography>
+                  </Paper>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No bookings on this date.
+              </Typography>
+            )}
+          </Grid>
+        </Grid>
       </Paper>
     </>
   );

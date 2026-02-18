@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardActionArea, Typography, Chip, Box } from '@mui/material';
+import { Card, CardContent, CardActionArea, CardMedia, Typography, Chip, Box } from '@mui/material';
 import type { Field } from '@field-scheduler/shared';
 
 interface Props {
@@ -10,11 +10,24 @@ export default function FieldCard({ field }: Props) {
   return (
     <Card>
       <CardActionArea component={Link} to={`/fields/${field.id}`}>
+        {field.photo_url && (
+          <CardMedia
+            component="img"
+            height="140"
+            image={field.photo_url}
+            alt=""
+            sx={{ display: 'block' }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
         <CardContent>
           <Typography variant="h6" gutterBottom>{field.name}</Typography>
           <Box sx={{ display: 'flex', gap: 0.5, mb: 1, flexWrap: 'wrap' }}>
             <Chip label={field.field_type} size="small" color="primary" />
             {field.surface && <Chip label={field.surface} size="small" variant="outlined" />}
+            {field.has_lights && <Chip label="Lights" size="small" />}
+            {field.has_parking && <Chip label="Parking" size="small" />}
+            {field.is_indoor && <Chip label="Indoor" size="small" />}
           </Box>
           {field.location && (
             <Typography variant="body2" color="text.secondary">

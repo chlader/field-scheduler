@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import {
   TextField, Button, MenuItem, Paper, Box,
-  FormControl, InputLabel, Select, Chip, OutlinedInput,
-  SelectChangeEvent,
+  FormControlLabel, Switch,
 } from '@mui/material';
-import type { Field, CreateFieldInput, FieldType, Surface,  } from '@field-scheduler/shared';
+import type { Field, CreateFieldInput, FieldType, Surface } from '@field-scheduler/shared';
 
-const FIELD_TYPES: FieldType[] = ['soccer', 'baseball', 'football', 'multi-purpose', 'tennis', 'basketball'];
+const FIELD_TYPES: FieldType[] = [
+  'soccer', 'baseball', 'football', 'multi-purpose', 'tennis', 'basketball',
+  'softball', 'lacrosse', 'rugby', 'cricket', 'pickleball', 'volleyball',
+];
 const SURFACES: Surface[] = ['grass', 'turf', 'dirt', 'clay', 'hardcourt'];
 
 interface Props {
@@ -19,6 +21,12 @@ export default function FieldForm({ initialValues, onSubmit }: Props) {
   const [fieldType, setFieldType] = useState<FieldType>(initialValues?.field_type || 'soccer');
   const [surface, setSurface] = useState<Surface | ''>(initialValues?.surface || '');
   const [location, setLocation] = useState(initialValues?.location || '');
+  const [description, setDescription] = useState(initialValues?.description || '');
+  const [size, setSize] = useState(initialValues?.size || '');
+  const [photoUrl, setPhotoUrl] = useState(initialValues?.photo_url || '');
+  const [hasLights, setHasLights] = useState(initialValues?.has_lights ?? false);
+  const [hasParking, setHasParking] = useState(initialValues?.has_parking ?? false);
+  const [isIndoor, setIsIndoor] = useState(initialValues?.is_indoor ?? false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +35,12 @@ export default function FieldForm({ initialValues, onSubmit }: Props) {
       field_type: fieldType,
       surface: surface || null,
       location: location || null,
+      description: description || null,
+      size: size || null,
+      photo_url: photoUrl || null,
+      has_lights: hasLights,
+      has_parking: hasParking,
+      is_indoor: isIndoor,
     });
   };
 
@@ -67,6 +81,39 @@ export default function FieldForm({ initialValues, onSubmit }: Props) {
           onChange={(e) => setLocation(e.target.value)}
           placeholder="Address or description"
         />
+        <TextField
+          label="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          multiline
+          rows={3}
+        />
+        <TextField
+          label="Size"
+          value={size}
+          onChange={(e) => setSize(e.target.value)}
+          placeholder="e.g. 100x60 yards"
+        />
+        <TextField
+          label="Photo URL"
+          value={photoUrl}
+          onChange={(e) => setPhotoUrl(e.target.value)}
+          placeholder="Image URL"
+        />
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <FormControlLabel
+            control={<Switch checked={hasLights} onChange={(e) => setHasLights(e.target.checked)} />}
+            label="Lights"
+          />
+          <FormControlLabel
+            control={<Switch checked={hasParking} onChange={(e) => setHasParking(e.target.checked)} />}
+            label="Parking"
+          />
+          <FormControlLabel
+            control={<Switch checked={isIndoor} onChange={(e) => setIsIndoor(e.target.checked)} />}
+            label="Indoor"
+          />
+        </Box>
         <Button type="submit" variant="contained" size="large">
           {initialValues ? 'Update Field' : 'Create Field'}
         </Button>
